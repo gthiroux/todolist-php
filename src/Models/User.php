@@ -8,22 +8,36 @@ use PDO;
 class User extends Database
 {
 	private $id;
-	private $username;
+	private $firstname;
+	private $lastname;
 	private $email;
 	private $password;
 
-	public function getUsername()
+	public function getFirstname()
 	{
-		return $this->username;
+		return $this->firstname;
 	}
 
-	public function setUsername($value)
+	public function setFirstname($value)
 	{
-		if (empty($value)) throw new Exception('Username is required');
-		if (strlen($value) > 3 && strlen($value) < 10) throw new Exception('Username must be between 3 and 10 characters');
-		if (preg_match('/^[a-zA-Z0-9]+$/', $value)) throw new Exception('Username can only contain letters and numbers');
+		if (empty($value)) throw new Exception('Firstname is required');
+		if (strlen($value) < 3 && strlen($value) > 50) throw new Exception('Firstname must be between 3 and 50 characters');
+		if (!preg_match('/^[a-zA-Z0-9]+$/', $value)) throw new Exception('Firstname can only contain letters and numbers');
 
-		$this->username = htmlspecialchars($value);
+		$this->firstname = htmlspecialchars($value);
+	}
+	public function getLastname()
+	{
+		return $this->lastname;
+	}
+
+	public function setLastname($value)
+	{
+		if (empty($value)) throw new Exception('Lastname is required');
+		if (strlen($value) < 3 && strlen($value) > 50) throw new Exception('Lastname must be between 3 and 50 characters');
+		if (!preg_match('/^[a-zA-Z0-9]+$/', $value)) throw new Exception('Lastname can only contain letters and numbers');
+
+		$this->lastname = htmlspecialchars($value);
 	}
 
 	public function getEmail()
@@ -52,14 +66,48 @@ class User extends Database
 		return $this->password;
 	}
 
-	public function register()
+	public function createUser()
 	{
-		$queryExecute = $this->db->prepare("INSERT INTO `users`(`username`, `email`, `password`) 
-			VALUES (:username, :email, :password)");
+		$queryExecute = $this->db->prepare("INSERT INTO `users`(`firstname`,`lastname`, `email`, `password`) 
+			VALUES (:firstname,:lastname, :email, :password)");
 
-		$queryExecute->bindValue(':username', $this->username, PDO::PARAM_STR);
+		$queryExecute->bindValue(':firstname', $this->firstname, PDO::PARAM_STR);
+		$queryExecute->bindValue(':lastname', $this->lastname, PDO::PARAM_STR);
 		$queryExecute->bindValue(':email', $this->email, PDO::PARAM_STR);
 		$queryExecute->bindValue(':password', $this->password, PDO::PARAM_STR);
+
+		return $queryExecute->execute();
+	}
+
+	public function getUser($id)
+	{
+
+		$sql = "SELECT * FROM users WHERE `id` :id";
+		$queryExecute = $this->db->prepare($sql);
+		$queryExecute->bindValue(':id', $id, PDO::PARAM_INT);
+
+		$queryExecute->execute();
+		return $queryExecute->fetch(PDO::FETCH_OBJ);
+	}
+
+	public function modifUser($id)
+	{
+		$queryExecute = $this->db->prepare("UPDATE `users` 
+			SET `firstname`=:firstname,`lastname`=:lastname, `email`=:email, `password`=:password 
+			WHERE `id`=:id");
+
+		$queryExecute->bindValue(':firstname', $this->firstname, PDO::PARAM_STR);
+		$queryExecute->bindValue(':lastname', $this->lastname, PDO::PARAM_STR);
+		$queryExecute->bindValue(':email', $this->email, PDO::PARAM_STR);
+		$queryExecute->bindValue(':password', $this->password, PDO::PARAM_STR);
+		$queryExecute->bindValue(':id', $id, PDO::PARAM_INT);
+
+		return $queryExecute->execute();
+	}
+	public function deleteUser($id)
+	{
+		$queryExecute = $this->db->prepare("DELETE FROM `users` WHERE `id`=:id");
+		$queryExecute->bindValue(':id', $id, PDO::PARAM_INT);
 
 		return $queryExecute->execute();
 	}
