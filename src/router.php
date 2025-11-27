@@ -9,7 +9,6 @@ if ($path == '/') {
 	require 'controllers/indexController.php';
 } else {
 	$path = explode('/', $path)[1];
-
 	$controlleur = 'controllers/' . $path . 'Controller.php';
 
 	if (file_exists($controlleur)) {

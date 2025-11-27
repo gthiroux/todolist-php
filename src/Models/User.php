@@ -65,9 +65,24 @@ class User extends Database
 	{
 		return $this->password;
 	}
+	public function checkConfirmPassword($value)
+	{
+		if (empty($value) || empty($this->password)) throw new Exception('Le mot de passe et la confirmation de mot de passe est obligatoire');
+		if (password_verify($value, $this->password)) throw new Exception('La confirmation de mot de passe ne correspond pas');
+		return true;
+	}
+	public function getUserByEmail()
+	{
+		$queryExecute = $this->db->prepare("SELECT * FROM users WHERE `email` = :email");
+		$queryExecute->bindValue(':email', $this->email, PDO::PARAM_STR);
 
+		$queryExecute->execute();
+		return $queryExecute->fetch(PDO::FETCH_OBJ);
+	}
 	public function createUser()
 	{
+		if ($this->getUserByEmail()) throw new Exception('Email déjà utilisé');
+
 		$queryExecute = $this->db->prepare("INSERT INTO `users`(`firstname`,`lastname`, `email`, `password`) 
 			VALUES (:firstname,:lastname, :email, :password)");
 

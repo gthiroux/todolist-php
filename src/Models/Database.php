@@ -7,12 +7,16 @@ use PDO;
 
 class Database
 {
-	protected $db;
+	private static $instance = null;
+	protected  $db;
 
 	public function __construct()
 	{
 		try {
-			$this->db = new PDO('mysql:host=mysql-con;dbname=database;charset=utf8', 'user', 'password');
+			if (self::$instance == null) {
+				self::$instance = new PDO('mysql:host=mysql-con;dbname=database;charset=utf8', 'user', 'password');
+			}
+			$this->db = self::$instance;
 		} catch (Exception $e) {
 			die('Erreur : ' . $e->getMessage());
 		}
